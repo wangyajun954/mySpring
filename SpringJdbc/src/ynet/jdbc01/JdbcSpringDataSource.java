@@ -6,10 +6,13 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -17,6 +20,8 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.jdbc.support.incrementer.MySQLMaxValueIncrementer;
 import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.sun.xml.internal.bind.v2.runtime.Name;
 
@@ -27,12 +32,13 @@ import ynet.jdbc02.JdbcUseInSpringTemplate;
  * 开发环境：嵌入式数据源
  * QA环境 ：连接池数据源
  * 生产环境：jndi 数据源
- * @author dd
+ * @author dd    @ImportResource("classpath:config\\springjdbc.xml")
  *在java 里配置
  *
  */
 @Configuration
 @ComponentScan(basePackages={"ynet.jdbc02"})
+@EnableTransactionManagement
 public class JdbcSpringDataSource {
 
 	/**
@@ -124,8 +130,15 @@ public class JdbcSpringDataSource {
 	 * @return
 	 */
 	@Bean
-	public NamedParameterJdbcTemplate nameJdbcTemplate(DataSource dataSource){
-		return new NamedParameterJdbcTemplate(dataSource);
+	public NamedParameterJdbcTemplate nameJdbcTemplate(){
+		return new NamedParameterJdbcTemplate(jdbcDataSource());
+	}
+	
+	@Bean
+	public DataSourceTransactionManager txmanage(DataSource dataSource){
+		DataSourceTransactionManager  txmanage= new DataSourceTransactionManager();
+		txmanage.setDataSource(dataSource);
+		return txmanage;
 	}
 	
 //	@Bean
